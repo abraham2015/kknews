@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.cobo.udslide.PullToRefreshLayout 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/refresh_view"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+    
+    <include layout="@layout/refresh_head" />
+
+    <com.cobo.udslide.PullableListView
+        android:id="@+id/plv_headline"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:scrollbars="none"
+        android:divider="@color/gray"
+        android:dividerHeight="1dp" />
+    <include layout="@layout/load_more" />
+    
+    
+    
+</com.cobo.udslide.PullToRefreshLayout>

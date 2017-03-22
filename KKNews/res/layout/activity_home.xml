@@ -1,0 +1,55 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#EBECF0"
+    tools:context="com.cobo.kknews.HomeActivity" >
+	
+    <RelativeLayout android:id="@+id/title_rl_home"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="#EB413D">
+        
+        <ImageView 
+            android:id="@+id/home_iv_me"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="6dp"
+            android:background="@drawable/user_login" />
+        
+        <TextView 
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:textColor="#fff8f8ff"
+            android:textSize="20sp"
+            android:text="@string/app_name"/>
+        
+        <ImageView 
+            android:id="@+id/home_iv_set"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="6dp"
+            android:background="@drawable/set" />
+    
+	</RelativeLayout>
+	
+    <com.cobo.lrslide.TabsView
+        android:id="@+id/tabslayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/title_rl_home" 
+        android:background="#ffffff"/>
+	
+   	<android.support.v4.view.ViewPager  
+        android:id="@+id/viewpager"  
+        android:layout_width="wrap_content"  
+        android:layout_height="wrap_content" 
+        android:layout_below="@id/tabslayout" 
+        android:layout_gravity="center">  
+    </android.support.v4.view.ViewPager>  
+	
+</RelativeLayout>

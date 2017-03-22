@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#ebecee"
+
+>
+        
+    <com.cobo.kknews.MyEditText
+        android:id="@+id/pop_comment_et_content"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:background="@drawable/corner"
+        android:textCursorDrawable="@drawable/cursor"
+        android:gravity="top"
+        android:layout_margin="8dp" 
+        android:maxLength="50"
+        android:maxLines="3"
+        android:textSize="16sp"
+        android:padding="4dp"/>
+    
+    <TextView
+        android:id="@+id/pop_comment_tv_wordAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/pop_comment_et_content"
+        android:layout_centerVertical="true"
+        android:textColor="@color/gray"
+        android:layout_marginLeft="8dp" 
+        android:text="还可输入50个字"/>
+        
+    
+    <Button 
+        android:id="@+id/pop_comment_btn_send"
+        android:layout_width="50dp"
+        android:layout_height="30dp"
+        android:layout_below="@id/pop_comment_et_content"
+        android:layout_alignParentRight="true"
+        android:background="@drawable/corner"
+        android:textColor="@color/gray"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="8dp"
+        android:text="发表"/>
+    
+
+</RelativeLayout>

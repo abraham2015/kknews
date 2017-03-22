@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" 
+    android:orientation="vertical"
+     android:background="#f6f6f6" >
+    
+    <RelativeLayout
+        android:id="@+id/register_rl_head"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="#EB413D" >
+
+        <ImageView
+            android:id="@+id/register_iv_back"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginLeft="8dp"
+            android:layout_centerVertical="true"
+            android:background="@drawable/back_white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="60dp"
+            android:text="注册"
+            android:textColor="#fff8f8ff"/>
+        
+    </RelativeLayout>
+    
+    <EditText 
+       android:id="@+id/register_et_account"
+       android:layout_width="match_parent"
+       android:layout_height="40dp"
+       android:background="#ffffff"
+       android:singleLine="true"
+       android:paddingLeft="8dp"
+       android:layout_marginTop="20dp"
+       android:digits="@string/account_limit"
+       android:textCursorDrawable="@drawable/cursor"
+       android:maxLength="20"
+       android:textSize="16sp"
+       android:hint="账户名:"/>
+   
+   <EditText
+       android:id="@+id/register_et_pw1"
+       android:layout_width="match_parent"
+       android:layout_height="40dp"
+       android:inputType="textPassword"
+       android:digits="@string/pw_limit"
+       android:textCursorDrawable="@drawable/cursor"
+       android:background="#ffffff"
+       android:singleLine="true"
+       android:paddingLeft="8dp"
+       android:layout_marginTop="4dp"
+       android:maxLength="11"
+       android:textSize="16sp"
+       android:hint="密码:"/>
+   
+   
+   <EditText
+       android:id="@+id/register_et_pw2"
+       android:layout_width="match_parent"
+       android:layout_height="40dp"
+       android:inputType="textPassword"
+       android:digits="@string/pw_limit"
+       android:textCursorDrawable="@drawable/cursor"
+       android:background="#ffffff"
+       android:singleLine="true"
+       android:paddingLeft="8dp"
+       android:layout_marginTop="4dp"
+       android:maxLength="11"
+       android:textSize="16sp"
+       android:hint="再次输入密码:"/>
+   
+   
+   <EditText
+       android:id="@+id/register_et_nickname"
+       android:layout_width="match_parent"
+       android:layout_height="40dp"
+       android:background="#ffffff"
+       android:textCursorDrawable="@drawable/cursor"
+       android:singleLine="true"
+       android:paddingLeft="8dp"
+       android:layout_marginTop="4dp"
+       android:maxLength="7"
+       android:textSize="16sp"
+       android:hint="昵称:"/>
+   
+   <Button 
+       android:id="@+id/register_btn_register"
+       android:layout_width="match_parent"
+       android:layout_height="40dp"
+       android:background="@drawable/corner" 
+       android:layout_centerHorizontal="true"
+       android:layout_margin="16dp"
+       android:textColor="@color/gray"
+       android:text="注册" />
+
+</LinearLayout>

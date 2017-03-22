@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#f6f6f6" >
+
+    <RelativeLayout
+        android:id="@+id/me_rl_head"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="#EB413D" >
+
+        <ImageView
+            android:id="@+id/me_iv_back"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/back_white" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:layout_marginLeft="60dp"
+            android:text="个人中心"
+            android:textColor="#fff8f8ff" />
+    </RelativeLayout>
+
+    <com.cobo.kknews.MyRoundImageView
+        android:id="@+id/me_riv_icon"
+        android:layout_width="66dp"
+        android:layout_height="66dp"
+        android:layout_below="@id/me_rl_head"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/icon_default" />
+
+    <TextView
+        android:id="@+id/me_tv_nickname"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/me_riv_icon"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp" />
+
+    <RelativeLayout
+        android:id="@+id/me_rl_collect"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_below="@id/me_tv_nickname"
+        android:layout_marginTop="10dp"
+        android:background="#ffffff" >
+
+        <ImageView
+            android:id="@+id/me_iv_collect"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="8dp"
+            android:src="@drawable/collect_red" />
+
+        <TextView
+            android:id="@+id/me_tv_collect"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/me_iv_collect"
+            android:background="#ffffff"
+            android:gravity="center_vertical"
+            android:text="个人收藏"
+            android:textSize="16sp" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:layout_below="@id/me_rl_collect"
+        android:layout_marginTop="2dp"
+        android:background="#ffffff" >
+
+        <ImageView
+            android:id="@+id/me_iv_read"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="8dp"
+            android:src="@drawable/read" />
+
+        <TextView
+            android:id="@+id/me_tv_read"
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@id/me_iv_read"
+            android:background="#ffffff"
+            android:gravity="center_vertical"
+            android:text="最近阅读"
+            android:textSize="16sp" />
+    </RelativeLayout>
+
+</RelativeLayout>
