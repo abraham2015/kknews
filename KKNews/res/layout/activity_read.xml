@@ -10,7 +10,7 @@
         android:background="#EB413D" >
 
         <ImageView
-            android:id="@+id/collect_iv_back"
+            android:id="@+id/read_iv_back"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_centerVertical="true"
@@ -22,13 +22,14 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:layout_marginStart="60dp"
-            android:text="个人收藏"
+            android:text="最近阅读"
             android:textColor="#fff8f8ff" />
     </RelativeLayout>
     
-    <ListView android:id="@+id/collect_lv"
+    <ListView android:id="@+id/read_lv"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
     </ListView>
     
+
 </LinearLayout>

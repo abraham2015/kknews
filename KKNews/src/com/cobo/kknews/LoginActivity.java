@@ -70,6 +70,14 @@ public class LoginActivity extends Activity {
 					edit.apply();
 				}
 				
+				//检查是否存在用于记录最近阅读的新闻的SharedPreferences，如果不存在则创建
+				if(!(new File("/data/data/"+getPackageName().toString()+"/shared_prefs/read_"+account+".xml").exists())){
+					sp = getSharedPreferences("read_"+account,MODE_PRIVATE);
+					edit = sp.edit();
+					edit.putInt("counter", 0);//记录最近阅读的新闻条数
+					edit.apply();
+				}
+				
 				//下载用户收藏信息记录到SharedPreferences,这是为了当用户卸载应用后重新登陆或者换手机登陆时，
 				//用户收藏的新闻id能在本地与服务器数据库保持同步，不同步的话，收藏按钮背景出错
 				downloadCollect();

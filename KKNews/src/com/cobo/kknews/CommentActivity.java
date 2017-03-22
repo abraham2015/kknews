@@ -46,6 +46,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+@SuppressLint("SimpleDateFormat")
 @SuppressWarnings("deprecation")
 public class CommentActivity extends Activity implements BackListener{
 	private ImageView comment_iv_back;
@@ -57,6 +58,9 @@ public class CommentActivity extends Activity implements BackListener{
 	private TextView pop_comment_tv_wordAmount;
 	private Button pop_comment_btn_send;
 	private News tagNews;
+	private List<Comment> commentList = new ArrayList<Comment>();
+	private CommentAdapter adapter;
+	private String publishTime;
 	private SharedPreferences sp;
 	
 	@SuppressLint({ "HandlerLeak", "ShowToast" })
@@ -65,9 +69,8 @@ public class CommentActivity extends Activity implements BackListener{
 		@Override
 		public void handleMessage(Message msg) {
 			if(msg.what ==1){
-				List<Comment> commentList = new ArrayList<Comment>();
 				commentList = (List<Comment>) msg.obj;
-				CommentAdapter adapter = new CommentAdapter(CommentActivity.this, R.layout.item_comment, commentList);
+				adapter = new CommentAdapter(CommentActivity.this, R.layout.item_comment, commentList);
 				comment_plv.setAdapter(adapter);
 			}else if(msg.what ==2){
 				Toast.makeText(CommentActivity.this,"发表成功!", 0).show();
@@ -77,6 +80,7 @@ public class CommentActivity extends Activity implements BackListener{
 		}
 	};
 	
+	@SuppressWarnings("unused")
 	@SuppressLint("InflateParams")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -84,14 +88,13 @@ public class CommentActivity extends Activity implements BackListener{
 		setContentView(R.layout.activity_comment);
 		
 		sp = getSharedPreferences("current_user", MODE_PRIVATE);
+		sp = getSharedPreferences("user_"+sp.getString("account", null), MODE_PRIVATE);
 		//获取从上一页面得到的新闻对象
 		Intent i =getIntent();
 		tagNews = (News) i.getSerializableExtra("tagNews");
-		Log.i("tag", sp.getString("account", null));
 
 		comment_iv_back = (ImageView) findViewById(R.id.comment_iv_back);
 		comment_iv_writeComment = (ImageView) findViewById(R.id.comment_iv_writeComment);
-		@SuppressWarnings("unused")
 		PullToRefreshLayout comment_refresh_view = (PullToRefreshLayout)findViewById(R.id.comment_refresh_view);
 		comment_plv = (PullableListView)findViewById(R.id.comment_plv);
 		pop = getLayoutInflater().inflate(R.layout.pop_comment, null);
@@ -100,6 +103,9 @@ public class CommentActivity extends Activity implements BackListener{
 		pop_comment_et_content = (MyEditText) pop.findViewById(R.id.pop_comment_et_content);
 		pop_comment_tv_wordAmount = (TextView) pop.findViewById(R.id.pop_comment_tv_wordAmount);
 		pop_comment_btn_send = (Button) pop.findViewById(R.id.pop_comment_btn_send);
+		
+		adapter = new CommentAdapter(CommentActivity.this, R.layout.item_comment, commentList);
+		comment_plv.setAdapter(adapter);
 		
 		//获取评论
 		getComment();
@@ -117,7 +123,6 @@ public class CommentActivity extends Activity implements BackListener{
 		comment_iv_writeComment.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				sp = getSharedPreferences("current_user", MODE_PRIVATE);
 				if(sp.getString("account", null)!=null){
 					//设置输入框弹出位置
 					popw.showAtLocation(v, 0, 0,CommentActivity.this.getWindowManager().getDefaultDisplay().getHeight());
@@ -146,9 +151,18 @@ public class CommentActivity extends Activity implements BackListener{
 			public void onClick(View v) {
 				if(!pop_comment_et_content.getText().toString().equals("")){
 					sendComment();
+					publishTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+					Comment comment = new Comment();
+					comment.setNid(tagNews.getId());
+					comment.setAccount(sp.getString("account", null));
+					comment.setNickname(sp.getString("nickname", null));
+					comment.setTime(publishTime.substring(5,16));
+					comment.setIconUrl(sp.getString("account", null)+".jpg");
+					comment.setContent(pop_comment_et_content.getText().toString());
+					commentList.add(0,comment);
+					adapter.notifyDataSetChanged();
 					pop_comment_et_content.setText("");
 					back(pop_comment_et_content);
-					onCreate(null);
 				}
 			}
 		});
@@ -280,7 +294,7 @@ public class CommentActivity extends Activity implements BackListener{
 					List<NameValuePair> params = new ArrayList<NameValuePair>();
 					params.add(new BasicNameValuePair("nid", tagNews.getId()+""));
 					params.add(new BasicNameValuePair("account", sp.getString("account", null)));
-					params.add(new BasicNameValuePair("time", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())));
+					params.add(new BasicNameValuePair("time",publishTime));
 					params.add(new BasicNameValuePair("content",pop_comment_et_content.getText().toString()));
 					UrlEncodedFormEntity entry = new UrlEncodedFormEntity(params,"utf-8");
 					httpPost.setEntity(entry);

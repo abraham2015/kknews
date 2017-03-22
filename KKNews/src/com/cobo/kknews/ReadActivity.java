@@ -1,6 +1,7 @@
 package com.cobo.kknews;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,116 +18,98 @@ import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
-import com.cobo.udslide.MyListener;
-import com.cobo.udslide.PullToRefreshLayout;
-import com.cobo.udslide.PullableListView;
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.Fragment;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
+import android.view.View.OnClickListener;
 import android.widget.AdapterView;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.Toast;
 import android.widget.AdapterView.OnItemClickListener;
 
+@SuppressLint({ "HandlerLeak", "ShowToast" })
 @SuppressWarnings("deprecation")
-@SuppressLint({ "HandlerLeak", "InflateParams" })
-public class FragmentHeadline extends Fragment {
-	private View view;
-	private PullableListView plv_headline;
-	private NewsAdapter adapter ;
-	private PullToRefreshLayout ptrl;
-	private List<News> newsList = new ArrayList<News>();
+public class ReadActivity extends Activity {
+	private ImageView read_iv_back;
+	private ListView read_lv;
+	private List<News> newsList;
+	private SharedPreferences sp;
 	
 	private Handler handler = new Handler(){
 		@SuppressWarnings("unchecked")
 		@Override
 		public void handleMessage(Message msg) {
-			newsList = (List<News>) msg.obj;
-			adapter = new NewsAdapter(view.getContext(),R.layout.item_news, newsList);
-	    	plv_headline.setAdapter(adapter);
-			ptrl.setOnRefreshListener(new MyListener(adapter,newsList,1));
+			if(msg.what == 1){
+				newsList = (List<News>) msg.obj;
+				ReadNewsAdapter adapter = new ReadNewsAdapter(ReadActivity.this,R.layout.item_news, newsList);
+				read_lv.setAdapter(adapter);
+			}else{
+				Toast.makeText(ReadActivity.this, "你还没有阅读呢!", 0).show();
+			}
 		}
-		
 	};
 	
 	@Override
-	public void onStart() {
-		// TODO Auto-generated method stub
-		plv_headline = (PullableListView)getActivity().findViewById(R.id.plv_headline);
-		ptrl = (PullToRefreshLayout) getActivity().findViewById(R.id.refresh_view);
+	protected void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_read);
 		
-		plv_headline.setOnItemClickListener(new OnItemClickListener() {
-			@SuppressWarnings("static-access")
+		read_iv_back = (ImageView) findViewById(R.id.read_iv_back);
+		read_lv = (ListView) findViewById(R.id.read_lv);
+		
+		//展示已读新闻
+		showReadNews();
+		
+		//跳转到新闻详情页面
+		read_lv.setOnItemClickListener(new OnItemClickListener() {
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-				//如果未标记为已读，则标记为已读新闻
-				SharedPreferences sp = getActivity().getSharedPreferences("current_user",getActivity().MODE_PRIVATE);
-				sp = getActivity().getSharedPreferences("read_"+sp.getString("account", null),getActivity().MODE_PRIVATE);
-				int counter = sp.getInt("counter", 0);
-				Editor edit = sp.edit();
-				if(counter<20){
-					if(sp.getInt(newsList.get(position).getId()+"", 0)==0){
-						edit.putInt(newsList.get(position).getId()+"", counter+1);
-						edit.putInt("counter", counter+1);
-						edit.apply();
-					}
-				}else{
-					//当最近阅读记录有20条后，移除最早阅读的那条
-					Map<String, ?> all = sp.getAll();
-					all.remove("counter");
-					Set<String> keySet = all.keySet();
-					for(String s:keySet){
-						if(sp.getInt(s, 0)==1){
-							edit.remove(s);
-							keySet.remove(s);
-							break;
-						}
-					}
-					int value = 0;
-					for(String s:keySet){
-						value = sp.getInt(s, 0);
-						edit.putInt(s, value-1);
-					}
-					edit.putInt(newsList.get(position).getId()+"", 20);
-					edit.apply();
-				}
-				//跳转到新闻详情页面
-				Intent i = new Intent(getActivity(),NewsDetailsActivity.class);
+				Intent i = new Intent(ReadActivity.this,NewsDetailsActivity.class);
 				i.putExtra("tagNews", newsList.get(position));
-				getActivity().startActivity(i);
+				startActivity(i);
 			}
-			
 		});
-		getNews();
-		super.onStart();
-	}
-
-	
-
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		view =inflater.inflate(R.layout.fragment_headline, null);
-		return view;
+		
+		read_iv_back.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				onBackPressed();
+			}
+		});
 	}
 	
-	private void getNews(){
+	
+	/**
+	 * 从服务器下载用户最近读的新闻
+	 */
+	private void showReadNews(){
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
+				sp = getSharedPreferences("current_user",MODE_PRIVATE);
+				sp = getSharedPreferences("read_"+sp.getString("account", null),MODE_PRIVATE);
+				Map<String, ?> all = sp.getAll();
+				Set<String> set = all.keySet();
+				set.remove("counter");
+				StringBuffer nidSB = new StringBuffer();
+				for(String s:set){
+					nidSB.append(s+",");
+				}
+				String nidStr = nidSB.toString();
+				nidStr = nidStr.substring(0, nidStr.length()-1);
 				HttpClient httpClient=null;
 				try{
 					httpClient = new DefaultHttpClient();
 					HttpPost httpPost = new HttpPost("http://www.skycobo.com:8080/KKNewsServer/ShowNews");
 					List<NameValuePair> params = new ArrayList<NameValuePair>();
-					params.add(new BasicNameValuePair("operation", "showNews"));
-					params.add(new BasicNameValuePair("kind", "1"));
+					params.add(new BasicNameValuePair("operation", "showReadNews"));
+					params.add(new BasicNameValuePair("nidStr", nidStr));
 					UrlEncodedFormEntity entry = new UrlEncodedFormEntity(params,"utf-8");
 					httpPost.setEntity(entry);
 					HttpResponse httpResponse = httpClient.execute(httpPost);
@@ -135,6 +118,8 @@ public class FragmentHeadline extends Fragment {
 						String response = EntityUtils.toString(entity,"utf-8");
 						if(!response.equals("no data")){
 							parseNews(response);
+						}else{
+							handler.sendEmptyMessage(2);
 						}
 					}
 				}catch(Exception e){
@@ -148,13 +133,20 @@ public class FragmentHeadline extends Fragment {
 		).start();
 	}
 	
+	
+	/**
+	 * 解析服务器返回的新闻Json
+	 * @param newsJosn
+	 */
 	private void parseNews(String newsJosn){
 		News news = null;
 		JSONArray ja = null;
+		News[] newsArray = null;
 		List<News> newsList = new ArrayList<News>();
 		try {
 			ja = new JSONArray(newsJosn);
 			JSONObject jo = null;
+			newsArray = new News[ja.length()];
 			for(int i=0;i<ja.length();i++){
 				news = new News();
 				jo = ja.getJSONObject(i);
@@ -164,15 +156,18 @@ public class FragmentHeadline extends Fragment {
 				news.setImageUrl(jo.getString("imageUrl"));
 				news.setPublishTime(jo.getString("time"));
 				news.setCommentAmount(jo.getInt("commentAmount"));
-				newsList.add(news);
+				newsArray[sp.getInt(jo.getInt("nid")+"", 0)-1]=news;
 			}
-			
+			for(News n :newsArray){
+				newsList.add(n);
+			}
+			Collections.reverse(newsList);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 		Message msg = new Message();
+		msg.what =1;
 		msg.obj = newsList;
 		handler.sendMessage(msg);
 	}
 }
-	

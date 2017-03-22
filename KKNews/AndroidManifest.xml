@@ -42,6 +42,8 @@
         
         <activity android:name=".CollectActivity"></activity>
         
+        <activity android:name=".ReadActivity"></activity>
+        
     </application>
 
 </manifest>

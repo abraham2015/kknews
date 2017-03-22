@@ -11,10 +11,8 @@ import com.cobo.kknews.utils.DownloadSaveImage;
 import com.loopj.android.image.SmartImageView;
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Environment;
 import android.view.LayoutInflater;
@@ -24,18 +22,14 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 @SuppressLint("InflateParams")
-public class NewsAdapter extends ArrayAdapter<News> {
+public class ReadNewsAdapter extends ArrayAdapter<News> {
 	private Context context;
 	private List<News> newsList;
-	private SharedPreferences sp;
 	
-	@SuppressWarnings("static-access")
-	public NewsAdapter(Context context, int textViewresourceId, List<News> newsList) {
+	public ReadNewsAdapter(Context context, int textViewresourceId, List<News> newsList) {
 		super(context, textViewresourceId, newsList);
 		this.context = context;
 		this.newsList = newsList;
-		sp = context.getSharedPreferences("current_user",context.MODE_PRIVATE);
-		sp = context.getSharedPreferences("read_"+sp.getString("account", null),context.MODE_PRIVATE);
 	}
 
 	@Override
@@ -48,25 +42,12 @@ public class NewsAdapter extends ArrayAdapter<News> {
 			viewHolder = new ViewHolder();
 			viewHolder.title = (TextView) view.findViewById(R.id.item_news_tv_title);
 			viewHolder.smartImage = (SmartImageView) view.findViewById(R.id.item_news_siv_image);
-			viewHolder.source = (TextView) view.findViewById(R.id.item_news_tv_source);
-			viewHolder.commentAmount = (TextView) view.findViewById(R.id.item_news_tv_comment);
 			view.setTag(viewHolder);
 		}else{
 			view = convertView;
 			viewHolder = (ViewHolder) view.getTag();
 		}
 		viewHolder.title.setText(news.getTitle());
-		viewHolder.source.setText(news.getSource());
-		viewHolder.commentAmount.setText(news.getCommentAmount()+"跟帖");
-		if(sp.getInt(news.getId()+"", 0)!=0){
-			viewHolder.title.setTextColor(Color.parseColor("#aaaaaa"));
-			viewHolder.source.setTextColor(Color.parseColor("#aaaaaa"));
-			viewHolder.commentAmount.setTextColor(Color.parseColor("#aaaaaa"));
-		}else{
-			viewHolder.title.setTextColor(Color.parseColor("#000000"));
-			viewHolder.source.setTextColor(Color.parseColor("#000000"));
-			viewHolder.commentAmount.setTextColor(Color.parseColor("#000000"));
-		}
 		if(new File(Environment.getExternalStorageDirectory()+"/KKNews/news_image/"+news.getId()+".jpg").exists()){
 			//图片已在本地，则从本地获取
 			Uri incoUri = Uri.fromFile(new File(Environment.getExternalStorageDirectory()+"/KKNews/news_image/"+news.getId()+".jpg"));
@@ -87,7 +68,6 @@ public class NewsAdapter extends ArrayAdapter<News> {
 				e.printStackTrace();
 			}
 		}
-		
 		return view;
 		
 	}
@@ -95,7 +75,5 @@ public class NewsAdapter extends ArrayAdapter<News> {
 	class ViewHolder{
 		TextView title;
 		SmartImageView smartImage;
-		TextView source;
-		TextView commentAmount;
 	}
 }

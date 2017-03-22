@@ -1,11 +1,7 @@
 package com.cobo.kknews;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -19,20 +15,17 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-@SuppressWarnings("unused")
 public class MeActivity extends Activity {
 	private ImageView me_iv_back;
 	private MyRoundImageView me_riv_icon;
 	private TextView me_tv_nickname;
 	private TextView me_tv_collect;
+	private TextView me_tv_read;
 	private SharedPreferences sp;
 	private File incoFile;
 
@@ -45,10 +38,10 @@ public class MeActivity extends Activity {
 		me_riv_icon = (MyRoundImageView) findViewById(R.id.me_riv_icon);
 		me_tv_nickname = (TextView) findViewById(R.id.me_tv_nickname);
 		me_tv_collect = (TextView) findViewById(R.id.me_tv_collect);
+		me_tv_read = (TextView) findViewById(R.id.me_tv_read);
 		
 		sp = getSharedPreferences("current_user", MODE_PRIVATE);
-		String currentUser = sp.getString("account", null);
-		sp = getSharedPreferences("user_"+currentUser,MODE_PRIVATE);
+		sp = getSharedPreferences("user_"+sp.getString("account", null),MODE_PRIVATE);
 		me_tv_nickname.setText(sp.getString("nickname", null));
 		incoFile = new File(Environment.getExternalStorageDirectory()+"/KKNews/user_icon",sp.getString("account", null)+".jpg");
 		setInco();//设置头像
@@ -71,6 +64,19 @@ public class MeActivity extends Activity {
 				startActivity(new Intent(MeActivity.this,CollectActivity.class));
 			}
 		});
+		
+		
+		/**
+		 * 点击跳转最近阅读界面
+		 */
+		me_tv_read.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				startActivity(new Intent(MeActivity.this,ReadActivity.class));
+			}
+		});
+		
+		
 		
 		me_iv_back.setOnClickListener(new OnClickListener() {
 			@Override

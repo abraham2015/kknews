@@ -48,7 +48,10 @@ public class ShowNewsServlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		
 		String operation = request.getParameter("operation");
-		int kind = Integer.parseInt(request.getParameter("kind"));
+		int kind = 0;
+		if(request.getParameter("kind")!= null){
+			kind = Integer.parseInt(request.getParameter("kind"));
+		}
 		System.out.println(operation);
 		if(operation.equals("showNews")){
 			MySQL mysql = new MySQL("localhost", "KKNews", "kknews", "kknews123");
@@ -59,10 +62,15 @@ public class ShowNewsServlet extends HttpServlet {
 			int maxID = Integer.parseInt(request.getParameter("maxID"));
 			System.out.println("maxID:"+maxID);
 			showLatestNews(kind,maxID,out);
-		}else{
+		}else if(operation.equals("showAgoNews")){
 			int minID = Integer.parseInt(request.getParameter("minID"));
 			System.out.println("minID:"+minID);
 			showAgoNews(kind,minID,out);
+		}else{
+			String nidStr = request.getParameter("nidStr");
+			MySQL mysql = new MySQL("localhost", "KKNews", "kknews", "kknews123");
+			ResultSet rs = mysql.query("select nid,title,source,imageUrl,time,commentAmount from news where nid in("+nidStr+");");
+			showNews(mysql,rs,out);
 		}
 	}
 		
