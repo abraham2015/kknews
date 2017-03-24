@@ -10,7 +10,7 @@
         android:layout_height="45dp"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:background="#fafafa" >
+        android:background="#EB413D" >
 
         <ImageView
             android:id="@+id/news_details_iv_back"

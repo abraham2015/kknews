@@ -3,6 +3,7 @@ package com.cobo.kknews.news;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -49,10 +50,60 @@ public class ShowCommentServlet extends HttpServlet {
 		PrintWriter out = response.getWriter();
 		
 		int nid = Integer.parseInt(request.getParameter("nid"));
+		String operation = request.getParameter("operation");
+		System.out.println(operation);
 		
-		MySQL mysql = new MySQL("localhost", "KKNews", "kknews", "kknews123");
-		ResultSet rs = mysql.query("select cid,content,comment.time,nickname,iconUrl from comment,user where user.account=comment.account and nid="+nid+" order by cid desc;");
-		System.out.println("showC");
+		if(operation.equals("show")){
+			MySQL mysql = new MySQL("localhost", "KKNews", "kknews", "kknews123");
+			ResultSet rs = mysql.query("select cid,content,comment.time,nickname,iconUrl from"
+					+ " comment,user where user.account=comment.account and nid="+nid+" order by cid desc limit 10;");
+			show(out,mysql,rs);
+		}else if(operation.equals("showLatest")){
+			MySQL mysql = new MySQL("localhost", "KKNews", "kknews", "kknews123");
+			int maxCid = Integer.parseInt(request.getParameter("maxCid"));
+			int max = 0;
+			ResultSet rs = mysql.query("select max(cid) from comment where nid="+maxCid+";");
+			try {
+				rs.next();
+				max = rs.getInt("max(cid)");
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			mysql.close();
+			if(maxCid == max){
+				out.print("no data");
+			}else{
+				MySQL mysql1 = new MySQL("localhost", "KKNews", "kknews", "kknews123");
+				ResultSet rs1 = mysql1.query("select cid,content,comment.time,nickname,iconUrl from"
+						+ " comment,user where user.account=comment.account and nid="+nid+" and cid>"+maxCid+" limit 5;");
+				show(out,mysql1,rs1);
+			}
+		}else{
+			MySQL mysql = new MySQL("localhost", "KKNews", "kknews", "kknews123");
+			int minCid = Integer.parseInt(request.getParameter("minCid"));
+			System.out.println("minCid:"+minCid);
+			int min = 0;
+			ResultSet rs = mysql.query("select min(cid) from comment where nid="+nid+";");
+			try {
+				rs.next();
+				min = rs.getInt("min(cid)");
+				System.out.println("min:"+min);
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			mysql.close();
+			if(minCid == min){
+				out.print("no data");
+			}else{
+				MySQL mysql1 = new MySQL("localhost", "KKNews", "kknews", "kknews123");
+				ResultSet rs1 = mysql1.query("select cid,content,comment.time,nickname,iconUrl from"
+						+ " comment,user where user.account=comment.account and nid="+nid+" and cid<"+minCid+" order by cid desc limit 5;");
+				show(out,mysql1,rs1);
+			}
+		}
+	}
+	
+	private void show(PrintWriter out, MySQL mysql, ResultSet rs) {
 		try {
 			if(rs.next()){
 				JSONArray ja = new JSONArray();
@@ -67,7 +118,6 @@ public class ShowCommentServlet extends HttpServlet {
 					jo.put("time",rs.getString("comment.time").substring(5, 16));
 					ja.put(jo);
 				}
-				mysql.close();
 				out.print(ja.toString());
 				System.out.println(ja.toString());
 			}else{
@@ -77,6 +127,7 @@ public class ShowCommentServlet extends HttpServlet {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally{
+			mysql.close();
 			out.close();
 		}
 	}

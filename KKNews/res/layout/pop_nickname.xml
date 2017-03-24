@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="#ebecee" 
+    android:padding="4dp">
+    
+    <com.cobo.kknews.MyEditText
+        android:id="@+id/pop_comment_et_nickname"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:paddingLeft="2dp"
+        android:maxLength="7"
+        android:singleLine="true"
+        android:background="@drawable/corner"/>
+    
+     <Button 
+        android:id="@+id/pop_comment_btn_comfirm"
+        android:layout_width="40dp"
+        android:layout_height="30dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_below="@id/pop_comment_et_nickname"
+        android:background="@drawable/corner"
+        android:text="确定"/>
+    
+     <Button 
+        android:id="@+id/pop_comment_btn_cancel"
+        android:layout_width="40dp"
+        android:layout_height="30dp"
+        android:layout_toLeftOf="@id/pop_comment_btn_comfirm"
+        android:layout_below="@id/pop_comment_et_nickname"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:background="@drawable/corner"
+        android:text="取消"/>
+    
+   
+    
+
+</RelativeLayout>

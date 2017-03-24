@@ -21,6 +21,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.cobo.kknews.MyEditText.BackListener;
+import com.cobo.udslide.NewsListener;
 import com.cobo.udslide.PullToRefreshLayout;
 import com.cobo.udslide.PullableListView;
 import android.annotation.SuppressLint;
@@ -51,6 +52,7 @@ import android.widget.Toast;
 public class CommentActivity extends Activity implements BackListener{
 	private ImageView comment_iv_back;
 	private ImageView comment_iv_writeComment;
+	private PullToRefreshLayout comment_refresh_view;
 	private PullableListView comment_plv;
 	private View pop;
 	private PopupWindow popw;
@@ -60,8 +62,8 @@ public class CommentActivity extends Activity implements BackListener{
 	private News tagNews;
 	private List<Comment> commentList = new ArrayList<Comment>();
 	private CommentAdapter adapter;
+	private Comment newComment;
 	private String publishTime;
-	private SharedPreferences sp;
 	
 	@SuppressLint({ "HandlerLeak", "ShowToast" })
 	private Handler handler = new Handler(){
@@ -70,8 +72,10 @@ public class CommentActivity extends Activity implements BackListener{
 		public void handleMessage(Message msg) {
 			if(msg.what ==1){
 				commentList = (List<Comment>) msg.obj;
+				Log.i("kk", "minCid:"+commentList.size());
 				adapter = new CommentAdapter(CommentActivity.this, R.layout.item_comment, commentList);
 				comment_plv.setAdapter(adapter);
+				comment_refresh_view.setOnRefreshListener(new CommentListener(tagNews.getId(),adapter,commentList));
 			}else if(msg.what ==2){
 				Toast.makeText(CommentActivity.this,"发表成功!", 0).show();
 			}else{
@@ -80,22 +84,20 @@ public class CommentActivity extends Activity implements BackListener{
 		}
 	};
 	
-	@SuppressWarnings("unused")
 	@SuppressLint("InflateParams")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_comment);
 		
-		sp = getSharedPreferences("current_user", MODE_PRIVATE);
-		sp = getSharedPreferences("user_"+sp.getString("account", null), MODE_PRIVATE);
+		
 		//获取从上一页面得到的新闻对象
 		Intent i =getIntent();
 		tagNews = (News) i.getSerializableExtra("tagNews");
 
 		comment_iv_back = (ImageView) findViewById(R.id.comment_iv_back);
 		comment_iv_writeComment = (ImageView) findViewById(R.id.comment_iv_writeComment);
-		PullToRefreshLayout comment_refresh_view = (PullToRefreshLayout)findViewById(R.id.comment_refresh_view);
+		comment_refresh_view = (PullToRefreshLayout)findViewById(R.id.comment_refresh_view);
 		comment_plv = (PullableListView)findViewById(R.id.comment_plv);
 		pop = getLayoutInflater().inflate(R.layout.pop_comment, null);
 		popw = new PopupWindow(pop,LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT,true);
@@ -123,6 +125,7 @@ public class CommentActivity extends Activity implements BackListener{
 		comment_iv_writeComment.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View v) {
+				SharedPreferences sp = getSharedPreferences("current_user", MODE_PRIVATE);
 				if(sp.getString("account", null)!=null){
 					//设置输入框弹出位置
 					popw.showAtLocation(v, 0, 0,CommentActivity.this.getWindowManager().getDefaultDisplay().getHeight());
@@ -150,19 +153,22 @@ public class CommentActivity extends Activity implements BackListener{
 			@Override
 			public void onClick(View v) {
 				if(!pop_comment_et_content.getText().toString().equals("")){
-					sendComment();
+					SharedPreferences sp = getSharedPreferences("current_user", MODE_PRIVATE);
+					sp = getSharedPreferences("user_"+sp.getString("account", null), MODE_PRIVATE);
 					publishTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-					Comment comment = new Comment();
-					comment.setNid(tagNews.getId());
-					comment.setAccount(sp.getString("account", null));
-					comment.setNickname(sp.getString("nickname", null));
-					comment.setTime(publishTime.substring(5,16));
-					comment.setIconUrl(sp.getString("account", null)+".jpg");
-					comment.setContent(pop_comment_et_content.getText().toString());
-					commentList.add(0,comment);
+					newComment = new Comment();
+					newComment.setNid(tagNews.getId());
+					newComment.setAccount(sp.getString("account", null));
+					newComment.setNickname(sp.getString("nickname", null));
+					newComment.setTime(publishTime.substring(5,16));
+					newComment.setIconUrl(sp.getString("account", null)+".jpg");
+					newComment.setContent(pop_comment_et_content.getText().toString());
+					commentList.add(0,newComment);
+					sendComment();
 					adapter.notifyDataSetChanged();
 					pop_comment_et_content.setText("");
 					back(pop_comment_et_content);
+					
 				}
 			}
 		});
@@ -188,6 +194,7 @@ public class CommentActivity extends Activity implements BackListener{
 					httpClient = new DefaultHttpClient();
 					HttpPost httpPost = new HttpPost("http://www.skycobo.com:8080/KKNewsServer/ShowComment");
 					List<NameValuePair> params = new ArrayList<NameValuePair>();
+					params.add(new BasicNameValuePair("operation","show"));
 					params.add(new BasicNameValuePair("nid", tagNews.getId()+""));
 					UrlEncodedFormEntity entry = new UrlEncodedFormEntity(params,"utf-8");
 					httpPost.setEntity(entry);
@@ -231,6 +238,7 @@ public class CommentActivity extends Activity implements BackListener{
 				if(jo.getString("iconUrl")!=null){
 					comment.setIconUrl(jo.getString("iconUrl"));
 				}
+				comment.setCid(jo.getInt("cid"));
 				comment.setNickname(jo.getString("nickname"));
 				comment.setTime(jo.getString("time"));
 				comment.setContent(jo.getString("content"));
@@ -293,9 +301,9 @@ public class CommentActivity extends Activity implements BackListener{
 					HttpPost httpPost = new HttpPost("http://www.skycobo.com:8080/KKNewsServer/UploadComment");
 					List<NameValuePair> params = new ArrayList<NameValuePair>();
 					params.add(new BasicNameValuePair("nid", tagNews.getId()+""));
-					params.add(new BasicNameValuePair("account", sp.getString("account", null)));
+					params.add(new BasicNameValuePair("account", newComment.getAccount()));
 					params.add(new BasicNameValuePair("time",publishTime));
-					params.add(new BasicNameValuePair("content",pop_comment_et_content.getText().toString()));
+					params.add(new BasicNameValuePair("content",newComment.getContent()));
 					UrlEncodedFormEntity entry = new UrlEncodedFormEntity(params,"utf-8");
 					httpPost.setEntity(entry);
 					HttpResponse httpResponse = httpClient.execute(httpPost);

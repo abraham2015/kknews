@@ -86,10 +86,10 @@ public class MeActivity extends Activity {
 		});
 	}
 	
-	/*@Override
+	@Override
 	protected void onRestart() {
 		onCreate(null);
-	}*/
+	}
 	
 	
 	/**

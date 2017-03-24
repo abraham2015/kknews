@@ -34,6 +34,7 @@ import android.widget.Toast;
 @SuppressWarnings("deprecation")
 public class RegisterActivity extends Activity {
 	private EditText register_et_account;
+	private ImageView register_iv_notice;
 	private EditText register_et_pw1;
 	private EditText register_et_pw2;
 	private EditText register_et_nickname;
@@ -50,9 +51,13 @@ public class RegisterActivity extends Activity {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case 1:
+				register_iv_notice.setImageDrawable(RegisterActivity.this.getResources().getDrawable(R.drawable.correct));
+				register_iv_notice.setVisibility(View.VISIBLE);
 				Toast.makeText(RegisterActivity.this, "该账号可使用!", 0).show();
 				break;
 			case 2:
+				register_iv_notice.setImageDrawable(RegisterActivity.this.getResources().getDrawable(R.drawable.error));
+				register_iv_notice.setVisibility(View.VISIBLE);
 				Toast.makeText(RegisterActivity.this, "该账号已被使用!", 0).show();
 				break;
 			case 3:
@@ -76,16 +81,17 @@ public class RegisterActivity extends Activity {
 		setContentView(R.layout.activity_register);
 		
 		register_et_account = (EditText) findViewById(R.id.register_et_account);
+		register_iv_notice = (ImageView) findViewById(R.id.register_iv_notice);
 		register_et_pw1 = (EditText) findViewById(R.id.register_et_pw1);
 		register_et_pw2 = (EditText) findViewById(R.id.register_et_pw2);
 		register_et_nickname = (EditText) findViewById(R.id.register_et_nickname);
 		register_btn_register = (Button) findViewById(R.id.register_btn_register);
 		register_iv_back = (ImageView) findViewById(R.id.register_iv_back);
 		
-		register_et_account.addTextChangedListener(new MyTextWatcher(fill,0));
-		register_et_pw1.addTextChangedListener(new MyTextWatcher(fill,1));
-		register_et_pw2.addTextChangedListener(new MyTextWatcher(fill,2));
-		register_et_nickname.addTextChangedListener(new MyTextWatcher(fill,3));
+		register_et_account.addTextChangedListener(new MyTextWatcher(register_et_account,fill,0));
+		register_et_pw1.addTextChangedListener(new MyTextWatcher(register_et_pw1,fill,1));
+		register_et_pw2.addTextChangedListener(new MyTextWatcher(register_et_pw2,fill,2));
+		register_et_nickname.addTextChangedListener(new MyTextWatcher(register_et_nickname,fill,3));
 		
 		
 		register_btn_register.setOnClickListener(new OnClickListener() {
@@ -238,8 +244,10 @@ public class RegisterActivity extends Activity {
 	class MyTextWatcher implements TextWatcher{  
 	    private CharSequence temp;
 	    private boolean[] fill;
+	    private EditText et;
 	    int index;
-	    public MyTextWatcher( boolean[] fill, int index ){
+	    public MyTextWatcher(EditText et, boolean[] fill, int index ){
+	    	this.et = et;
 	    	this.fill = fill;
 	    	this.index = index;
 	    }
@@ -262,6 +270,9 @@ public class RegisterActivity extends Activity {
 	        } else{
 	        	fill[index] = false;
 	        	checkfill();
+	        	if(et.getId()==register_et_account.getId()){
+	        		register_iv_notice.setVisibility(View.INVISIBLE);
+	        	}
 	        }
 	          
 	    }

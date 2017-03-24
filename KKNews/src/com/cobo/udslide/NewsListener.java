@@ -28,14 +28,14 @@ import android.widget.Toast;
 
 @SuppressLint({ "HandlerLeak", "ShowToast" })
 @SuppressWarnings("deprecation")
-public class MyListener implements OnRefreshListener
+public class NewsListener implements OnRefreshListener
 {	
 	private int kind;
 	private Handler handler1;
 	private Handler handler2;
 	private NewsAdapter adapter;
 	private List<News> newsList = new ArrayList<News>();
-	public MyListener(NewsAdapter adapter,List<News> newsList,int kind) {
+	public NewsListener(NewsAdapter adapter,List<News> newsList,int kind) {
 		this.kind = kind;
 		this.adapter = adapter;
 		this.newsList = newsList;

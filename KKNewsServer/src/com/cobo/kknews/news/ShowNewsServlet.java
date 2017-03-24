@@ -90,7 +90,7 @@ public class ShowNewsServlet extends HttpServlet {
 			out.print("no data");
 		}else{
 			rs = mysql.query("select nid,title,source,imageUrl,time,commentAmount from news where kind="
-				+kind+" and nid>"+maxID+";");
+				+kind+" and nid>"+maxID+" limit 5;");
 			showNews(mysql,rs,out);
 		}
 		

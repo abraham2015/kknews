@@ -45,13 +45,9 @@ public class ReadActivity extends Activity {
 		@SuppressWarnings("unchecked")
 		@Override
 		public void handleMessage(Message msg) {
-			if(msg.what == 1){
-				newsList = (List<News>) msg.obj;
-				ReadNewsAdapter adapter = new ReadNewsAdapter(ReadActivity.this,R.layout.item_news, newsList);
-				read_lv.setAdapter(adapter);
-			}else{
-				Toast.makeText(ReadActivity.this, "你还没有阅读呢!", 0).show();
-			}
+			newsList = (List<News>) msg.obj;
+			ReadNewsAdapter adapter = new ReadNewsAdapter(ReadActivity.this,R.layout.item_news, newsList);
+			read_lv.setAdapter(adapter);
 		}
 	};
 	
@@ -63,8 +59,16 @@ public class ReadActivity extends Activity {
 		read_iv_back = (ImageView) findViewById(R.id.read_iv_back);
 		read_lv = (ListView) findViewById(R.id.read_lv);
 		
+		sp = getSharedPreferences("current_user",MODE_PRIVATE);
+		sp = getSharedPreferences("read_"+sp.getString("account", null),MODE_PRIVATE);
+		
 		//展示已读新闻
-		showReadNews();
+		if(sp.getInt("counter", 0)!=0){
+			showReadNews();
+		}else{
+			Toast.makeText(ReadActivity.this,"你还没阅读呢!", 0).show();
+		}
+		
 		
 		//跳转到新闻详情页面
 		read_lv.setOnItemClickListener(new OnItemClickListener() {
@@ -92,8 +96,6 @@ public class ReadActivity extends Activity {
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
-				sp = getSharedPreferences("current_user",MODE_PRIVATE);
-				sp = getSharedPreferences("read_"+sp.getString("account", null),MODE_PRIVATE);
 				Map<String, ?> all = sp.getAll();
 				Set<String> set = all.keySet();
 				set.remove("counter");
@@ -118,8 +120,6 @@ public class ReadActivity extends Activity {
 						String response = EntityUtils.toString(entity,"utf-8");
 						if(!response.equals("no data")){
 							parseNews(response);
-						}else{
-							handler.sendEmptyMessage(2);
 						}
 					}
 				}catch(Exception e){
@@ -166,7 +166,6 @@ public class ReadActivity extends Activity {
 			e.printStackTrace();
 		}
 		Message msg = new Message();
-		msg.what =1;
 		msg.obj = newsList;
 		handler.sendMessage(msg);
 	}

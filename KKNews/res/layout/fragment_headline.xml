@@ -11,6 +11,7 @@
         android:id="@+id/plv_headline"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
+        android:transcriptMode="alwaysScroll" 
         android:scrollbars="none"
         android:divider="@color/gray"
         android:dividerHeight="1dp" />

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#ebecee" >
+    
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="#ffffff"
+        android:text="请选择获取照片方式"
+        android:textColor="#0099FF"
+        android:gravity="center" />
+    
+    <TextView 
+        android:id="@+id/pop_inco_carema"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="#ffffff"
+        android:layout_marginTop="8dp"
+        android:text="相机"
+        android:textColor="#0099FF"
+        android:gravity="center" />
+    
+    <View 
+        android:layout_width="match_parent"
+        android:layout_height="1dp" />
+    
+     <TextView 
+        android:id="@+id/pop_inco_album"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:background="#ffffff"
+        android:text="相册"
+        android:textColor="#0099FF"
+        android:gravity="center" />
+     
+     <TextView 
+        android:id="@+id/pop_inco_cancel"
+        android:layout_width="match_parent"
+        android:background="#ffffff"
+        android:layout_height="45dp"
+        android:layout_marginTop="8dp"
+        android:text="取消"
+        android:textColor="#0099FF"
+        android:gravity="center" />
+    
+
+</LinearLayout>

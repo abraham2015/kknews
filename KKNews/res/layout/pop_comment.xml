@@ -2,9 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#ebecee"
-
->
+    android:background="#ebecee" >
         
     <com.cobo.kknews.MyEditText
         android:id="@+id/pop_comment_et_content"

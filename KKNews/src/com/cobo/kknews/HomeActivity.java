@@ -32,8 +32,6 @@ public class HomeActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
         
-        
-        
         ImageView home_iv_me = (ImageView) findViewById(R.id.home_iv_me);
         mViewPager = (ViewPager) findViewById(R.id.viewpager);
         mTabs = (TabsView) findViewById(R.id.tabslayout);

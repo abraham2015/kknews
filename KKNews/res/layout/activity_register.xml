@@ -17,7 +17,7 @@
             android:layout_height="20dp"
             android:layout_marginLeft="8dp"
             android:layout_centerVertical="true"
-            android:background="@drawable/back_white" />
+            android:background="@drawable/back" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -29,19 +29,35 @@
         
     </RelativeLayout>
     
-    <EditText 
-       android:id="@+id/register_et_account"
-       android:layout_width="match_parent"
-       android:layout_height="40dp"
-       android:background="#ffffff"
-       android:singleLine="true"
-       android:paddingLeft="8dp"
-       android:layout_marginTop="20dp"
-       android:digits="@string/account_limit"
-       android:textCursorDrawable="@drawable/cursor"
-       android:maxLength="20"
-       android:textSize="16sp"
-       android:hint="账户名:"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="#ffffff"
+        android:orientation="horizontal" >
+    
+	    <EditText
+	        android:id="@+id/register_et_account"
+	        android:layout_weight="1"
+	        android:layout_width="0dp"
+	        android:layout_height="40dp"
+	        android:background="#ffffff"
+	        android:digits="@string/account_limit"
+	        android:hint="账号:"
+	        android:maxLength="20"
+	        android:paddingLeft="8dp"
+	        android:singleLine="true"
+	        android:textCursorDrawable="@drawable/cursor"
+	        android:textSize="16sp" />
+
+	    <ImageView
+	        android:id="@+id/register_iv_notice"
+	        android:layout_width="20dp"
+	        android:layout_height="match_parent"
+	        android:layout_marginEnd="8dp"
+	        android:visibility="invisible"/>
+   
+   </LinearLayout>
    
    <EditText
        android:id="@+id/register_et_pw1"

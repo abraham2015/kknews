@@ -38,6 +38,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.View.OnClickListener;
 import android.view.WindowManager.LayoutParams;
 import android.view.inputmethod.InputMethodManager;
@@ -111,6 +112,7 @@ public class NewsDetailsActivity extends Activity implements BackListener{
 		news_details_iv_collect = (ImageView) findViewById(R.id.news_details_iv_collect);
 		pop = getLayoutInflater().inflate(R.layout.pop_comment, null);
 		popw = new PopupWindow(pop,LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT,true);
+		popw.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 		pop_comment_et_content = (MyEditText) pop.findViewById(R.id.pop_comment_et_content);
 		pop_comment_tv_wordAmount = (TextView) pop.findViewById(R.id.pop_comment_tv_wordAmount);
 		pop_comment_btn_send = (Button) pop.findViewById(R.id.pop_comment_btn_send);

@@ -18,9 +18,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.cobo.udslide.MyListener;
+import com.cobo.udslide.NewsListener;
 import com.cobo.udslide.PullToRefreshLayout;
 import com.cobo.udslide.PullableListView;
+
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -29,9 +30,12 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AbsListView.OnScrollListener;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 
@@ -42,6 +46,8 @@ public class FragmentHeadline extends Fragment {
 	private PullableListView plv_headline;
 	private NewsAdapter adapter ;
 	private PullToRefreshLayout ptrl;
+	SharedPreferences sp;
+	Editor edit;
 	private List<News> newsList = new ArrayList<News>();
 	
 	private Handler handler = new Handler(){
@@ -51,7 +57,10 @@ public class FragmentHeadline extends Fragment {
 			newsList = (List<News>) msg.obj;
 			adapter = new NewsAdapter(view.getContext(),R.layout.item_news, newsList);
 	    	plv_headline.setAdapter(adapter);
-			ptrl.setOnRefreshListener(new MyListener(adapter,newsList,1));
+			ptrl.setOnRefreshListener(new NewsListener(adapter,newsList,1));
+			if(sp.getInt("position", -1)!=-1){
+				plv_headline.setSelectionFromTop(sp.getInt("position", 0), sp.getInt("scrolledY", 0));
+			}
 		}
 		
 	};
@@ -61,6 +70,9 @@ public class FragmentHeadline extends Fragment {
 		// TODO Auto-generated method stub
 		plv_headline = (PullableListView)getActivity().findViewById(R.id.plv_headline);
 		ptrl = (PullToRefreshLayout) getActivity().findViewById(R.id.refresh_view);
+		
+		sp = getActivity().getSharedPreferences("position_1", getActivity().MODE_PRIVATE);
+		edit = sp.edit();
 		
 		plv_headline.setOnItemClickListener(new OnItemClickListener() {
 			@SuppressWarnings("static-access")
@@ -104,11 +116,28 @@ public class FragmentHeadline extends Fragment {
 			}
 			
 		});
+		
+		plv_headline.setOnScrollListener(new OnScrollListener() {
+			@Override
+			public void onScrollStateChanged(AbsListView view, int scrollState) {
+				//保存当前滚动到的位置
+			    if (scrollState == OnScrollListener.SCROLL_STATE_IDLE) {
+			    	int position = plv_headline.getFirstVisiblePosition();//获取在总的列表条数中的索引编号
+			    	View firstVisibleItem = plv_headline.getChildAt(0);//获取在可视的item中的索引编号
+			    	int scrolledY = firstVisibleItem.getTop();//获取第一个列表项相对于屏幕顶部的位置
+			    	Log.i("kk", "position:"+position+" scrolledY:"+scrolledY);
+			    	edit.putInt("position", position);
+			    	edit.putInt("scrolledY", scrolledY);
+			    	edit.apply();
+			    }
+			}
+			@Override
+			public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount){}
+		}); 
+		
 		getNews();
 		super.onStart();
 	}
-
-	
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -147,7 +176,7 @@ public class FragmentHeadline extends Fragment {
 			}}
 		).start();
 	}
-	
+
 	private void parseNews(String newsJosn){
 		News news = null;
 		JSONArray ja = null;

@@ -3,6 +3,8 @@ package com.cobo.kknews;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -13,8 +15,12 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+
+import com.cobo.kknews.MyEditText.BackListener;
+
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -27,24 +33,36 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
+import android.view.WindowManager.LayoutParams;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 @SuppressLint({ "HandlerLeak", "ShowToast", "SdCardPath" })
 @SuppressWarnings("deprecation")
-public class LoginActivity extends Activity {
+public class LoginActivity extends Activity implements BackListener{
 	private ImageView login_iv_back;
 	private TextView login_tv_register;
+	private TextView login_tv_forgetPW;
 	private EditText login_et_account;
 	private EditText login_et_pw;
 	private Button login_btn_login;
 	private String account;
 	private String pw;
+	private String newPW;
+	private View pop_pw;
+	private PopupWindow popw;
+	private MyEditText pop_pw_et_account;
+	private MyEditText pop_pw_et_oldPW;
+	private MyEditText pop_pw_et_newPW;
+	private Button pop_pw_btn_comfirm;
+	private Button pop_pw_btn_cancel;
 	private boolean[] fill = new boolean[2];//2个EditText是否有内容
-	private SharedPreferences sp;
 	private Handler handler = new Handler(){
 
 		@Override
@@ -54,7 +72,7 @@ public class LoginActivity extends Activity {
 				Toast.makeText(LoginActivity.this, "登陆成功!", 0).show();
 				
 				//将当前登陆账号写入SharedPreferences
-				sp = getSharedPreferences("current_user",MODE_PRIVATE);
+				SharedPreferences sp = getSharedPreferences("current_user",MODE_PRIVATE);
 				Editor edit = sp.edit();
 				edit.putString("account", account);
 				edit.apply();
@@ -77,11 +95,10 @@ public class LoginActivity extends Activity {
 					edit.putInt("counter", 0);//记录最近阅读的新闻条数
 					edit.apply();
 				}
-				
-				//下载用户收藏信息记录到SharedPreferences,这是为了当用户卸载应用后重新登陆或者换手机登陆时，
-				//用户收藏的新闻id能在本地与服务器数据库保持同步，不同步的话，收藏按钮背景出错
-				downloadCollect();
-				
+				//检查是否存在用于记录收藏的新闻的SharedPreferences，如果不存在则下载
+				if(!(new File("/data/data/"+getPackageName().toString()+"/shared_prefs/collect_"+account+".xml").exists())){
+					downloadCollect();
+				}
 				onBackPressed();
 				break;
 			case 2:
@@ -90,6 +107,29 @@ public class LoginActivity extends Activity {
 			case 3:
 				Toast.makeText(LoginActivity.this, "账号或密码错误!", 0).show();
 				break;	
+			case 5:
+				popw.dismiss();
+				Toast.makeText(LoginActivity.this, "修改成功!", 0).show();
+				pop_pw_et_newPW.setText("");
+				pop_pw_et_oldPW.setText("");
+				pop_pw_et_account.setText("");
+				break;	
+			case 6:
+				Toast.makeText(LoginActivity.this, "账号或密码错误!", 0).show();
+				break;	
+			case 7:
+				SharedPreferences sp1 = getSharedPreferences("current_user",MODE_PRIVATE);
+				sp1 = getSharedPreferences(
+						"collect_"+sp1.getString("account", null), LoginActivity.MODE_PRIVATE);
+				Editor edit1 = sp1.edit();
+				edit1.clear();
+				String[] nidArray = (String[]) msg.obj;
+				for(String s :nidArray){
+					Log.i("kk", s);
+					edit1.putBoolean(s, true);
+				}
+				edit1.apply();
+				break;
 			default:
 				break;
 			}
@@ -106,7 +146,15 @@ public class LoginActivity extends Activity {
 		login_et_pw = (EditText) findViewById(R.id.login_et_pw);
 		login_btn_login = (Button) findViewById(R.id.login_btn_login);
 		login_tv_register = (TextView) findViewById(R.id.login_tv_register);
+		login_tv_forgetPW = (TextView) findViewById(R.id.login_tv_forgetPW);
+		pop_pw = getLayoutInflater().inflate(R.layout.pop_pw, null);
+		pop_pw_et_account = (MyEditText) pop_pw.findViewById(R.id.pop_pw_et_account);
+		pop_pw_et_oldPW = (MyEditText) pop_pw.findViewById(R.id.pop_pw_et_oldPW);
+		pop_pw_et_newPW = (MyEditText) pop_pw.findViewById(R.id.pop_pw_et_newPW);
+		pop_pw_btn_comfirm = (Button) pop_pw.findViewById(R.id.pop_pw_btn_comfirm);
+		pop_pw_btn_cancel = (Button) pop_pw.findViewById(R.id.pop_pw_btn_cancel);
 		
+		pop_pw_et_account.setBackListener(this);
 		login_et_account.addTextChangedListener(new MyTextWatcher(fill,0));
 		login_et_pw.addTextChangedListener(new MyTextWatcher(fill,1));
 		
@@ -140,6 +188,53 @@ public class LoginActivity extends Activity {
 			}
 		});
 		
+		
+		/*
+		 * 点击弹出修改密码View
+		 */
+		login_tv_forgetPW.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				popw = new PopupWindow(pop_pw,LayoutParams.MATCH_PARENT,LayoutParams.WRAP_CONTENT,true);
+				popw.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+				popw.showAtLocation(v, 0, 0,LoginActivity.this.getWindowManager().getDefaultDisplay().getHeight());
+				Timer timer = new Timer();
+				timer.schedule(new TimerTask(){
+					@Override
+					public void run() {
+						//打开软键盘
+						InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);  
+						imm.toggleSoftInput(0, InputMethodManager.HIDE_NOT_ALWAYS); 
+					}
+				}, 200);
+			}
+		});
+		
+		//确定修改密码
+		pop_pw_btn_comfirm.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				if(!pop_pw_et_account.getText().toString().equals("")&&
+						!pop_pw_et_oldPW.getText().toString().equals("")&&
+						!pop_pw_et_newPW.getText().toString().equals("")){
+					pw = pop_pw_et_oldPW.getText().toString();
+					newPW = pop_pw_et_newPW.getText().toString();
+					account = pop_pw_et_account.getText().toString();
+					modifyPW();
+				}
+			}
+		});
+		
+		//取消修改密码
+		pop_pw_btn_cancel.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				pop_pw_et_newPW.setText("");
+				pop_pw_et_oldPW.setText("");
+				pop_pw_et_account.setText("");
+				popw.dismiss();
+			}
+		});
 		
 		login_iv_back.setOnClickListener(new OnClickListener() {
 			@Override
@@ -248,6 +343,47 @@ public class LoginActivity extends Activity {
 	
 	
 	/**
+	 * 修改密码
+	 */
+	private void modifyPW() {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				HttpClient httpClient=null;
+				try{
+					httpClient = new DefaultHttpClient();
+					HttpPost httpPost = new HttpPost("http://www.skycobo.com:8080/KKNewsServer/ModifyUserInfo");
+					List<NameValuePair> params = new ArrayList<NameValuePair>();
+					params.add(new BasicNameValuePair("tag","pw"));
+					params.add(new BasicNameValuePair("account", account));
+					params.add(new BasicNameValuePair("oldPW", pw));
+					params.add(new BasicNameValuePair("newPW", newPW));
+					UrlEncodedFormEntity entry = new UrlEncodedFormEntity(params,"utf-8");
+					httpPost.setEntity(entry);
+					HttpResponse httpResponse = httpClient.execute(httpPost);
+					if(httpResponse.getStatusLine().getStatusCode() == 200){
+						HttpEntity entity = httpResponse.getEntity();
+						String response = EntityUtils.toString(entity,"utf-8");
+						Log.i("kk", response);
+						if(response.equals("success")){
+							///账号或密码错误
+							handler.sendEmptyMessage(5);
+						}else{
+							handler.sendEmptyMessage(6);
+						}
+					}
+				}catch(Exception e){
+					e.printStackTrace();
+				}finally{
+					if(httpClient!=null){
+						httpClient.getConnectionManager().shutdown();
+					}
+				}
+			}}
+		).start();
+	}
+	
+	/**
 	 * 下载用户收藏信息记录到SharedPreferences
 	 */
 	private void downloadCollect(){
@@ -256,6 +392,7 @@ public class LoginActivity extends Activity {
 			public void run() {
 				HttpClient httpClient=null;
 				try{
+					SharedPreferences sp = getSharedPreferences("current_user",MODE_PRIVATE);
 					httpClient = new DefaultHttpClient();
 					HttpPost httpPost = new HttpPost("http://www.skycobo.com:8080/KKNewsServer/Collect");
 					List<NameValuePair> params = new ArrayList<NameValuePair>();
@@ -269,16 +406,11 @@ public class LoginActivity extends Activity {
 						String response = EntityUtils.toString(entity,"utf-8");
 						Log.i("kk", response);
 						if(!response.equals("")){
-							SharedPreferences sp1 = getSharedPreferences(
-									"collect_"+sp.getString("account", null), LoginActivity.MODE_PRIVATE);
-							Editor edit = sp1.edit();
-							edit.clear();
 							String[] nidArray = response.split(",");
-							for(String s :nidArray){
-								Log.i("kk", s);
-								edit.putBoolean(s, true);
-							}
-							edit.apply();
+							Message msg = new Message();
+							msg.obj = nidArray;
+							msg.what = 7;
+							handler.sendMessage(msg);
 						}
 					}
 				}catch(Exception e){
@@ -290,6 +422,17 @@ public class LoginActivity extends Activity {
 				}
 			}}
 		).start();
+	}
+
+
+	/**
+	 * 退出输入框
+	 */
+	@Override
+	public void back(TextView textView) {
+		if(popw!=null&&popw.isShowing()){
+			popw.dismiss();
+		}
 	}
 
 }
